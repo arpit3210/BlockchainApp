@@ -148,7 +148,7 @@ const Welcome = () => {
 
 
 
-            {false ? (
+            {true ? (
 
               <>
                <Loader></Loader>
