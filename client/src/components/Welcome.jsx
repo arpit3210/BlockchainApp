@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useContext} from 'react'
 // import AiFillPlayCircle  from "react-icons/ai"
 // import {SiEthereum } from "react-icons/si"
 // import {BsInfoCircle } from "react-icons/bs"
@@ -8,7 +8,7 @@ import { IoIosInformationCircleOutline } from "react-icons/io";
 
 import { Loader } from './'
 
-
+import { TransactionContext } from '../context/TransactionContext';
 
 const Input = ({ placeholder, name, type, value, handleChange }) => (
 
@@ -30,9 +30,11 @@ const Input = ({ placeholder, name, type, value, handleChange }) => (
 
 const Welcome = () => {
 
-  const connectWallet = () => {
+const {connectWallet, currentAccount } = useContext(TransactionContext);
 
-  }
+// console.log(value)
+
+
 
   const handleSubmit = () => {
 
@@ -48,7 +50,7 @@ const Welcome = () => {
 
         <div className='flex flex-1 justify-start  flex-col mf:mr-10  '>
           <h1 className='text-white sm:text-5xl text-gradient py-1 '>
-            Send Crypto <br />  across teh world
+            Send Crypto <br />  across the world
           </h1>
 
           <p className='text-left mt-5 text-white font-light md:w-p/12 text-base'>
@@ -119,8 +121,8 @@ const Welcome = () => {
 
               <div>
                 <p className='text-white font-light text-sm '>
-
-                  0xsadjsd.....324hjg23
+               { currentAccount}
+                  {/* 0xsadjsd.....324hjg23 */}
                 </p>
 
                 <p className='text-white font-semibold text-lg mt-1 '>
