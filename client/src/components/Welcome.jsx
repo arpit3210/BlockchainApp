@@ -30,7 +30,7 @@ const Input = ({ placeholder, name, type, value, handleChange }) => (
 
 const Welcome = () => {
 
-  const { connectWallet, currentAccount, formData, sendTransaction, handleChange } = useContext(TransactionContext);
+  const { connectWallet, currentAccount, formData, sendTransaction, handleChange, IsLoading } = useContext(TransactionContext);
 
   // console.log(value)
 
@@ -160,10 +160,10 @@ const Welcome = () => {
 
 
 
-            {false ? (
+            {IsLoading ? (
 
               <>
-                <Loader></Loader>
+                <Loader/>
               </>
 
             ) : (

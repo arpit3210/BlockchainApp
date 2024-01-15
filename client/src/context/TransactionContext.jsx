@@ -5,6 +5,13 @@ import { contractABI, contractAddress } from '../utils/constants';
 
 export const TransactionContext = React.createContext();
 
+
+
+
+
+
+
+
 const { ethereum } = window;
 
 let signer = null;
@@ -55,6 +62,7 @@ export const TransactionProvider = ({ children }) => {
     const [formData, setformData] = useState({ addressTo: '', amount: '', keyword: '', message: '' });
     const [IsLoading, setIsLoading] = useState(false);
     const [transactionCount, setTransactionCount] = useState(localStorage.getItem('transactionCount'));
+    const [transactions, setTransactions] = useState([]);
 
     const handleChange = (e, name) => {
         setformData((prevState) => ({ ...prevState, [name]: e.target.value }));
@@ -65,6 +73,38 @@ export const TransactionProvider = ({ children }) => {
     console.log(contractABI);
 
 
+
+
+
+
+
+    const getAllTransaction = async() => {
+        try {
+            if (!ethereum) return alert("Please install metamask");
+            const transactionsContract = await createEthereumContract();
+            const availableTransactions = await transactionsContract.getAllTransactions();
+    
+    const structuredTransactions = availableTransactions.map((transaction)=> ({
+        addressTo: transaction.receiver,
+        addressFrom: transaction.sender,
+        timestamp: new Date(Number(transaction.timestamp) * 1000).toLocaleDateString(),
+        message: transaction.message,
+        keyword: transaction.keyword,
+        amount: parseInt(transaction.amount) / 1e9
+     }))
+    
+       console.log("Structured data",structuredTransactions);
+    
+            setTransactions(structuredTransactions);
+    console.log(availableTransactions);
+        } catch (error) {
+            console.log(error);
+            throw new Error("No ethereum object");
+        }
+    }
+
+
+
     const checkIfWalletIsConnected = async () => {
         try {
             if (!ethereum) return alert('please Install metamask');
@@ -72,6 +112,8 @@ export const TransactionProvider = ({ children }) => {
             const accounts = await ethereum.request({ method: 'eth_accounts' });
             if (accounts.length) {
                 setCurrentAccount(accounts[0]);
+                getAllTransaction();
+
             } else {
                 console.log('No accounts found: Please connect to Metamask Wallet');
             }
@@ -81,6 +123,22 @@ export const TransactionProvider = ({ children }) => {
             throw new Error("No ethereum object");
         }
     };
+
+
+const checkIfTransactionsExist = async () => {
+
+    try {
+        const transactionsContract = await createEthereumContract();
+        const newTransactionCount = await transactionsContract.getTransactionCount();
+
+localStorage.setItem("transactionCount", newTransactionCount)
+        window
+    } catch (error) {
+        console.log(error);
+        throw new Error("No ethereum object");
+    }
+}
+
 
     const connectWallet = async () => {
         try {
@@ -138,10 +196,11 @@ export const TransactionProvider = ({ children }) => {
 
     useEffect(() => {
         checkIfWalletIsConnected();
+        checkIfTransactionsExist();
     }, []);
 
     return (
-        <TransactionContext.Provider value={{ connectWallet, currentAccount, formData, sendTransaction, handleChange }} >
+        <TransactionContext.Provider value={{ connectWallet, currentAccount, formData, sendTransaction, handleChange, transactions, IsLoading }} >
             {children}
         </TransactionContext.Provider>
     );
