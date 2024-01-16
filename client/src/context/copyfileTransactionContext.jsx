@@ -10,34 +10,55 @@ export const TransactionContext = React.createContext();
 
 
 
-const initializeProvider = async () => {
-    const { ethereum } = window;
-  
+
+const { ethereum } = window;
+
+let signer = null;
+
+let provider;
+if (window.ethereum == null) {
+
+    console.log("MetaMask not installed; using read-only defaults")
+    provider = ethers.getDefaultProvider()
+
+} else {
+
+    provider = new ethers.BrowserProvider(window.ethereum)
+
+    signer = await provider.getSigner();
+}
+
+
+
+
+
+const createEthereumContract = async() => {
     let signer = null;
+    // let newProvider;
+
     let provider;
-  
     if (window.ethereum == null) {
-      console.log("MetaMask not installed; using read-only defaults");
-      provider = ethers.getDefaultProvider();
+        console.log("MetaMask not installed; using read-only defaults");
+        provider = ethers.getDefaultProvider();
     } else {
-      provider = new ethers.BrowserProvider(window.ethereum);
-      signer = await provider.getSigner();
+        provider = new ethers.BrowserProvider(window.ethereum);
+        signer = await provider.getSigner();
+
+        // const readContract = new Contract(contractAddress, contractABI, provider);
+        const transactionsContract = new ethers.Contract(contractAddress, contractABI, signer);
+        console.log({ provider });
+        console.log({ signer });
+        console.log({ transactionsContract });
+        console.log(transactionsContract);
+        // console.log(Object.keys(transactionsContract.functions));
+        console.log("Helloe this Transaction contract", transactionsContract);
+
+
+        return transactionsContract;
     }
-  
-    return { provider, signer };
-  };
-  
-  const createEthereumContract = async () => {
-    const { provider, signer } = await initializeProvider();
-  
-    const transactionsContract = new ethers.Contract(contractAddress, contractABI, signer);
-    console.log({ provider });
-    console.log({ signer });
-    console.log({ transactionsContract });
-    console.log(transactionsContract);
-  
-    return transactionsContract;
-  };
+}
+
+await createEthereumContract();
 
 export const TransactionProvider = ({ children }) => {
     const [currentAccount, setCurrentAccount] = useState();
@@ -148,7 +169,7 @@ export const TransactionProvider = ({ children }) => {
             if (!ethereum) return alert('please install metamask ');
 
             const { addressTo, amount, keyword, message } = formData;
-            const { provider, signer } = await initializeProvider();
+
 
             const transactionsContract = await createEthereumContract();
             console.log(transactionsContract);
@@ -188,14 +209,14 @@ export const TransactionProvider = ({ children }) => {
 
     useEffect(() => {
         const fetchData = async () => {
-          await initializeProvider(); // Call initializeProvider directly inside useEffect
-          checkIfWalletIsConnected();
-          checkIfTransactionsExist();
+          
+            await createEthereumContract();
+            checkIfWalletIsConnected();
+            checkIfTransactionsExist();
         };
-    
+
         fetchData();
-      }, []);
-    
+    }, []);
 
     return (
         <TransactionContext.Provider value={{ connectWallet, currentAccount, formData, sendTransaction, handleChange, transactions, IsLoading }} >
